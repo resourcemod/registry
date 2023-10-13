@@ -1,4 +1,4 @@
-override APP_NAME=rmod-registry
+override APP_NAME=rmod-reg
 override GO_VERSION=1.19
 override DOCKER_IMAGE=resourcemod/rmod-registry
 override DOCKER_TAG=current
