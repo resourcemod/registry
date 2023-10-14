@@ -1,0 +1,614 @@
+openapi: 3.0.2
+info:
+  title: ResourceMod Registry API
+  version: 1.0.0
+paths:
+  /users/register:
+    post:
+      tags:
+        - Authorization
+      operationId: Register
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      responses:
+        '201':
+          description: 201 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUserResponse'
+        '403':
+          description: 403 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+        '422':
+          description: 422 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+  /users/login:
+    post:
+      tags:
+        - Authorization
+      operationId: Login
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        '200':
+          description: 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: 401 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '403':
+          description: 403 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+        '422':
+          description: 422 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+  /users:
+    post:
+      tags:
+        - Users
+      operationId: CreateUser
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+        required: true
+      responses:
+        '201':
+          description: 201 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUserResponse'
+        '422':
+          description: 422 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+    get:
+      tags:
+        - Users
+      operationId: GetUsersList
+      parameters: []
+      responses:
+        '200':
+          description: 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersListResponse'
+        '401':
+          description: 401 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '422':
+          description: 422 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+  /users/{name}:
+    get:
+      tags:
+        - Users
+      operationId: GetUserByName
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: 401 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '422':
+          description: 422 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+    delete:
+      tags:
+        - Users
+      operationId: DeleteUser
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteUserResponse'
+        '401':
+          description: 401 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+  /content/{type}/{name}:
+    get:
+      tags:
+        - Content
+      operationId: GetContentByName
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - plugin
+              - extension
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentResponse'
+        '401':
+          description: 401 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '422':
+          description: 422 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+    put:
+      tags:
+        - Content
+      operationId: UpdateContent
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - plugin
+              - extension
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateContentRequest'
+        required: true
+      responses:
+        '200':
+          description: 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentResponse'
+        '401':
+          description: 401 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '422':
+          description: 422 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+    delete:
+      tags:
+        - Content
+      operationId: DeleteContent
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - plugin
+              - extension
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteContentResponse'
+        '401':
+          description: 401 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+  /content/{type}:
+    get:
+      tags:
+        - Content
+      operationId: GetContentListByType
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - plugin
+              - extension
+      responses:
+        '200':
+          description: 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentListResponse'
+        '401':
+          description: 401 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '422':
+          description: 422 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+  /content/{type}/{name}/download:
+    get:
+      tags:
+        - Content
+      operationId: GetContentDownloadURI
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - plugin
+              - extension
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownloadURIResponse'
+        '401':
+          description: 401 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '422':
+          description: 422 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+  /content:
+    post:
+      tags:
+        - Content
+      operationId: UploadContent
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadContentRequest'
+        required: true
+      responses:
+        '201':
+          description: 201 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentResponse'
+        '401':
+          description: 401 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '422':
+          description: 422 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+components:
+  schemas:
+    RegisterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        password:
+          type: string
+        password_confirmation:
+          type: string
+      required:
+        - name
+        - password
+        - password_confirmation
+    CreateUserResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        access_token:
+          type: string
+      required:
+        - name
+        - access_token
+    ForbiddenResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          enum:
+            - Feature disabled by registry admin.
+        code:
+          type: integer
+          enum:
+            - 403
+          format: int32
+      required:
+        - message
+        - code
+    ValidationErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        code:
+          type: integer
+          enum:
+            - 422
+          format: int32
+      required:
+        - message
+        - code
+    LoginRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        password:
+          type: string
+      required:
+        - name
+        - password
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+      required:
+        - access_token
+    UnauthorizedResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        code:
+          type: integer
+          enum:
+            - 401
+          format: int32
+      required:
+        - message
+        - code
+    CreateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        password:
+          type: string
+        password_confirmation:
+          type: string
+      required:
+        - name
+        - password
+        - password_confirmation
+    UserResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - name
+        - created_at
+        - updated_at
+    UsersListResponse:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserResponse'
+      required:
+        - users
+    DeleteUserResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          enum:
+            - Deleted
+      required:
+        - message
+    ContentResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        type:
+          type: string
+          enum:
+            - plugin
+            - extension
+        description:
+          type: string
+        is_public:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - name
+        - version
+        - type
+        - is_public
+        - created_at
+        - updated_at
+    ContentListResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentResponse'
+      required:
+        - content
+    DownloadURIResponse:
+      type: object
+      properties:
+        link:
+          type: string
+        expired_at:
+          type: string
+          format: date-time
+      required:
+        - link
+    UploadContentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        version:
+          type: string
+        type:
+          type: string
+          enum:
+            - plugin
+            - extension
+        is_public:
+          type: boolean
+        repository:
+          type: string
+      required:
+        - name
+        - version
+        - type
+        - is_public
+        - repository
+    UpdateContentRequest:
+      type: object
+      properties:
+        description:
+          type: string
+        is_public:
+          type: boolean
+        repository:
+          type: string
+        version:
+          type: string
+      required:
+        - is_public
+        - repository
+        - version
+    DeleteContentResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          enum:
+            - Deleted
+      required:
+        - message

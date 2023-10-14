@@ -18,6 +18,7 @@ all: cleanup vendor
 cleanup:
 	@rm ${PWD}/bin/${APP_NAME} || true
 	@rm -r ${PWD}/vendor || true
+	@rm -r ${PWD}/pkg/api/*
 
 .PHONY: vendor
 vendor:
@@ -48,6 +49,10 @@ build:
 				-mod vendor \
 				-o /project/bin/${APP_NAME} \
 				-v /project/cmd/${APP_NAME}
+
+.PHONY: generate-api
+generate-api:
+	@go run github.com/ogen-go/ogen/cmd/ogen@latest --target pkg/api --clean api/openapi/spec.yml
 
 .PHONY: docker-build
 docker-build:
