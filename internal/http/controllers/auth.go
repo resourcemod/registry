@@ -43,10 +43,9 @@ func Register(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	model.CreatedAt = time.Now().String()
-	model.UpdatedAt = time.Now().String()
-	datab := db.GetMongoClient().Database("registry")
-	_, err = datab.Collection("users").InsertOne(context.TODO(), model)
+	model.CreatedAt = time.Now().Format(time.RFC3339)
+	model.UpdatedAt = time.Now().Format(time.RFC3339)
+	_, err = db.GetMongoClient().Database("registry").Collection("users").InsertOne(context.TODO(), model)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
 		return
@@ -83,7 +82,7 @@ func Login(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	model.UpdatedAt = time.Now().String()
+	model.UpdatedAt = time.Now().Format(time.RFC3339)
 	update := bson.D{{"$set", bson.D{{"access_token", model.AccessToken}, {"expired_at", model.ExpiredAt}, {"updated_at", model.UpdatedAt}}}}
 	_, err = db.GetMongoClient().Database("registry").Collection("users").UpdateOne(context.TODO(), bson.D{{"name", request.GetName()}}, update)
 	if err != nil {

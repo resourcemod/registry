@@ -21,7 +21,7 @@ func CheckPasswordHash(password, hash string) bool {
 
 func CreateAccessToken(user *models.User) error {
 	key := []byte(os.Getenv("JWT_SECRET_KEY"))
-	user.ExpiredAt = time.Now().AddDate(0, 1, 0).String()
+	user.ExpiredAt = time.Now().AddDate(0, 1, 0).Format(time.RFC3339)
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub":        user.Name,
 		"expired_at": user.ExpiredAt,
