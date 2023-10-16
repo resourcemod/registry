@@ -532,6 +532,8 @@ components:
           type: string
         is_public:
           type: boolean
+        user_name:
+          type: string
         created_at:
           type: string
           format: date-time
@@ -542,7 +544,9 @@ components:
         - name
         - version
         - type
+        - description
         - is_public
+        - user_name
         - created_at
         - updated_at
     ContentListResponse:
@@ -584,6 +588,7 @@ components:
           type: string
       required:
         - name
+        - description
         - version
         - type
         - is_public
@@ -600,6 +605,7 @@ components:
         version:
           type: string
       required:
+        - description
         - is_public
         - repository
         - version

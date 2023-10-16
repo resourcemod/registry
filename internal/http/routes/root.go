@@ -19,6 +19,7 @@ func InitRouter(ui bool, webAppPath string) *gin.Engine {
 	initSetupRoutes(v1)
 	initAuthRoutes(v1)
 	initUsersRoutes(v1)
+	initContentRoutes(v1)
 
 	return router
 }

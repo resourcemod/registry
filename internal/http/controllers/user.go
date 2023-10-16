@@ -56,7 +56,7 @@ func GetUsersList(c *gin.Context) {
 
 func GetUserByName(c *gin.Context) {
 	var request u.GetUserByNameParams
-	request.Name = c.Param("name")
+	request.Name = strings.ToLower(c.Param("name"))
 	res := db.GetMongoClient().Database("registry").Collection("users").FindOne(context.TODO(), bson.D{{
 		"name", request.Name,
 	}})
@@ -124,7 +124,7 @@ func CreateUser(c *gin.Context) {
 
 func DeleteUser(c *gin.Context) {
 	var request u.DeleteUserParams
-	request.Name = c.Param("name")
+	request.Name = strings.ToLower(c.Param("name"))
 	res := db.GetMongoClient().Database("registry").Collection("users").FindOneAndDelete(context.TODO(), bson.D{{
 		"name", request.Name,
 	}})

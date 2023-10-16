@@ -27,12 +27,21 @@ func InitDBConnection() {
 	if err = db.RunCommand(context.TODO(), command).Decode(&result); err != nil {
 		log.Fatal(err)
 	}
+	command = bson.D{{"create", "content"}}
+	if err = db.RunCommand(context.TODO(), command).Decode(&result); err != nil {
+		log.Fatal(err)
+	}
 
 	indexModel := mongo.IndexModel{
 		Keys:    bson.D{{"name", 1}},
 		Options: options.Index().SetUnique(true),
 	}
 	_, err = db.Collection("users").Indexes().CreateOne(context.TODO(), indexModel)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = db.Collection("content").Indexes().CreateOne(context.TODO(), indexModel)
 	if err != nil {
 		panic(err)
 	}

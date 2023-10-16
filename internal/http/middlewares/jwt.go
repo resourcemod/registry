@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/resourcemod/registry/internal/db"
 	"github.com/resourcemod/registry/pkg/models"
+	"github.com/resourcemod/registry/pkg/responses"
 	"go.mongodb.org/mongo-driver/bson"
 	"net/http"
 	"strings"
@@ -17,13 +18,13 @@ func HasToken() gin.HandlerFunc {
 		// before request
 		token := c.GetHeader("Authorization")
 		if len(strings.TrimSpace(token)) == 0 {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, "Authorization header is required.")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, responses.Unauthorized{Message: "Invalid token", Code: http.StatusUnauthorized})
 			return
 		}
 
 		form := strings.Split(token, " ")
 		if form[0] != "Bearer" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, "Bearer token is not provided.")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, responses.Unauthorized{Message: "Invalid token", Code: http.StatusUnauthorized})
 			return
 		}
 
@@ -31,24 +32,25 @@ func HasToken() gin.HandlerFunc {
 			{"access_token", form[1]},
 		})
 		if res.Err() != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, res.Err().Error())
+			c.AbortWithStatusJSON(http.StatusUnauthorized, responses.Unauthorized{Message: "Invalid token", Code: http.StatusUnauthorized})
 			return
 		}
 		var model models.User
 		err := res.Decode(&model)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, err.Error())
+			c.AbortWithStatusJSON(http.StatusUnauthorized, responses.Unauthorized{Message: "Invalid token", Code: http.StatusUnauthorized})
 			return
 		}
 		r, err := time.Parse(time.RFC3339, model.ExpiredAt)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, err.Error())
+			c.AbortWithStatusJSON(http.StatusUnauthorized, responses.Unauthorized{Message: err.Error(), Code: http.StatusUnauthorized})
 			return
 		}
 		if r.Before(time.Now()) {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, "Token expired.")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, responses.Unauthorized{Message: "Invalid token", Code: http.StatusUnauthorized})
 			return
 		}
+		c.Set("user_name", model.Name)
 
 		c.Next() // request
 		// after request
