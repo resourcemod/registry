@@ -51,6 +51,9 @@ func HasToken() gin.HandlerFunc {
 			return
 		}
 		c.Set("user_name", model.Name)
+		c.Set("user_created_at", model.CreatedAt)
+		c.Set("user_updated_at", model.UpdatedAt)
+		c.Set("user_token", model.AccessToken)
 
 		c.Next() // request
 		// after request

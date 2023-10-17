@@ -15,10 +15,19 @@ import (
 	"time"
 )
 
-func Register(c *gin.Context) {
+func Setup(c *gin.Context) {
 	var request u.RegisterRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
+		return
+	}
+	a, err := db.GetMongoClient().Database("registry").Collection("users").CountDocuments(context.TODO(), bson.D{{}})
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
+		return
+	}
+	if a > 0 {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Setup is not required."})
 		return
 	}
 	request.Name = strings.ToLower(request.GetName())
@@ -42,7 +51,7 @@ func Register(c *gin.Context) {
 	model := models.User{
 		Name:     request.Name,
 		Password: hash,
-		IsOwner:  false,
+		IsOwner:  true,
 	}
 	err = user.CreateAccessToken(&model)
 	if err != nil {
@@ -57,49 +66,14 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, u.UserWithTokenResponse{Name: model.Name, AccessToken: model.AccessToken, CreatedAt: t, UpdatedAt: t, IsOwner: false})
+	c.JSON(http.StatusCreated, u.UserWithTokenResponse{Name: model.Name, AccessToken: model.AccessToken, CreatedAt: t, UpdatedAt: t, IsOwner: true})
 }
 
-func Login(c *gin.Context) {
-	var request u.LoginRequest
-	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
-		return
-	}
-	request.Name = strings.ToLower(request.GetName())
-	res := db.GetMongoClient().Database("registry").Collection("users").FindOne(context.TODO(), bson.D{{"name", request.Name}})
-	if res.Err() != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": res.Err().Error()})
-		return
-	}
-
-	var model models.User
-	err := res.Decode(&model)
+func GetSetupRequired(c *gin.Context) {
+	a, err := db.GetMongoClient().Database("registry").Collection("users").CountDocuments(context.TODO(), bson.D{{}})
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
 		return
 	}
-	if model.AccessToken == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found."})
-		return
-	}
-
-	err = user.CreateAccessToken(&model)
-	if err != nil {
-		panic(err)
-	}
-	t := time.Now()
-	model.UpdatedAt = t.Format(time.RFC3339)
-	update := bson.D{{"$set", bson.D{{"access_token", model.AccessToken}, {"expired_at", model.ExpiredAt}, {"updated_at", model.UpdatedAt}}}}
-	_, err = db.GetMongoClient().Database("registry").Collection("users").UpdateOne(context.TODO(), bson.D{{"name", request.GetName()}}, update)
-	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
-		return
-	}
-	cr, err := time.Parse(time.RFC3339, model.CreatedAt)
-	if err != nil {
-		panic(err)
-	}
-
-	c.JSON(http.StatusCreated, u.UserWithTokenResponse{Name: model.Name, AccessToken: model.AccessToken, UpdatedAt: t, CreatedAt: cr, IsOwner: model.IsOwner})
+	c.JSON(http.StatusOK, gin.H{"required": a == 0})
 }

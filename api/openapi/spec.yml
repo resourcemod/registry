@@ -21,7 +21,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateUserResponse'
+                $ref: '#/components/schemas/UserWithTokenResponse'
         '403':
           description: 403 response
           content:
@@ -89,7 +89,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateUserResponse'
+                $ref: '#/components/schemas/UserWithTokenResponse'
         '422':
           description: 422 response
           content:
@@ -173,6 +173,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedResponse'
+  /user:
+    get:
+      tags:
+        - Users
+      operationId: GetAuthorizedUser
+      parameters: []
+      responses:
+        '200':
+          description: 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: 401 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '422':
+          description: 422 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
   /content/{type}/{name}:
     get:
       tags:
@@ -387,6 +412,50 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationErrorResponse'
+  /setup:
+    get:
+      tags:
+        - Setup
+      operationId: SetupRequired
+      parameters: []
+      responses:
+        '200':
+          description: 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetupRequiredResponse'
+  /setup/create:
+    post:
+      tags:
+        - Setup
+      operationId: SetupFirstUser
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      responses:
+        '201':
+          description: 201 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserWithTokenResponse'
+        '403':
+          description: 403 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+        '422':
+          description: 422 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
 components:
   schemas:
     RegisterRequest:
@@ -402,15 +471,26 @@ components:
         - name
         - password
         - password_confirmation
-    CreateUserResponse:
+    UserWithTokenResponse:
       type: object
       properties:
         name:
           type: string
+        is_owner:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
         access_token:
           type: string
       required:
         - name
+        - is_owner
+        - created_at
+        - updated_at
         - access_token
     ForbiddenResponse:
       type: object
@@ -488,6 +568,8 @@ components:
       properties:
         name:
           type: string
+        is_owner:
+          type: boolean
         created_at:
           type: string
           format: date-time
@@ -496,6 +578,7 @@ components:
           format: date-time
       required:
         - name
+        - is_owner
         - created_at
         - updated_at
     UsersListResponse:
@@ -618,3 +701,10 @@ components:
             - Deleted
       required:
         - message
+    SetupRequiredResponse:
+      type: object
+      properties:
+        required:
+          type: boolean
+      required:
+        - required
