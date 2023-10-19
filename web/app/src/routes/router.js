@@ -126,7 +126,11 @@ function authMiddleware() {
             user.access_token &&
             (to.name === 'Login' || to.name === 'Register')
         ) {
-            return {name: 'Dashboard'}
+            if (user.is_owner) {
+                return {name: 'Dashboard'}
+            } else {
+                return {name: 'Logout'}
+            }
         }
     })
 }

@@ -7,7 +7,7 @@
             <img src="/assets/logo.png" alt="Registry logo" class="w-full" />
           </div>
           <div class="text-light-gray mt-2 mb-2">
-            Sing in to your account
+            Sign in to your account
           </div>
         </div>
         <div class="flex flex-col gap-4 w-full">
@@ -27,8 +27,9 @@
           <div v-if="errors" class="text-error">
             {{errors}}
           </div>
-          <div class="form-control">
-            <button class="rounded-lg py-2 px-6 bg-font-gray text-white" @click="login">Sing In</button>
+          <div class="form-control flex flex-row justify-between items-center">
+            <button class="rounded-md py-2 px-4 bg-font-gray text-white" @click="login">Sign In</button>
+            <router-link to="/register" class="rounded-md py-2 px-4 border-[1px] border-font-gray transition hover:bg-font-gray hover:text-white">Create an account</router-link>
           </div>
         </div>
       </div>

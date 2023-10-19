@@ -8,9 +8,9 @@ import (
 )
 
 func initUsersRoutes(rg *gin.RouterGroup) {
-	rg.GET("/users", middlewares.HasToken(), controllers.GetUsersList)
-	rg.GET("/user", middlewares.HasToken(), controllers.GetAuthorizedUser)
-	rg.GET("/users/:name", middlewares.HasToken(), controllers.GetUserByName)
-	rg.POST("/users", middlewares.HasToken(), controllers.CreateUser)
-	rg.DELETE("/users/:name", middlewares.HasToken(), controllers.DeleteUser)
+	rg.GET("/users", middlewares.HasToken(), middlewares.IsOwner(), controllers.GetUsersList)
+	rg.GET("/user", middlewares.HasToken(), middlewares.IsOwner(), controllers.GetAuthorizedUser)
+	rg.GET("/users/:name", middlewares.HasToken(), middlewares.IsOwner(), controllers.GetUserByName)
+	rg.POST("/users", middlewares.HasToken(), middlewares.IsOwner(), controllers.CreateUser)
+	rg.DELETE("/users/:name", middlewares.HasToken(), middlewares.IsOwner(), controllers.DeleteUser)
 }

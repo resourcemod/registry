@@ -5,7 +5,7 @@
 import Cookies from 'js-cookie'
 export default {
   mounted() {
-    Cookies.remove('x-auth-token')
+    Cookies.remove('rmod_auth')
     location.reload()
   }
 }
