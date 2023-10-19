@@ -1,29 +1,34 @@
 <template>
-  <div class="hero min-h-screen bg-midnight">
-    <div class="hero-content flex-col lg:flex-row-reverse">
-      <div class="card flex-shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
+  <div class="h-screen w-screen flex flex-col justify-center items-center">
+    <div class="flex flex-col">
+      <div class="card flex-shrink-0 max-w-md bg-base-100">
         <div class="card-header text-center">
-          <h1 class="h1 text-2xl pt-4">resourcemod registry</h1>
-        </div>
-        <div class="card-body w-[370px]">
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">Email</span>
-            </label>
-            <input type="email" v-model="email" placeholder="" class="input input-bordered"/>
+          <div>
+            <img src="/assets/logo.png" alt="Registry logo" class="w-full" />
           </div>
+          <div class="text-light-gray mt-2 mb-2">
+            Sing in to your account
+          </div>
+        </div>
+        <div class="flex flex-col gap-4 w-full">
           <div class="form-control">
-            <label class="label">
+            <label class="block text-sm text-font-gray">
+              <span class="label-text">Name</span>
+            </label>
+            <input type="text" v-model="name" placeholder="" class="rounded w-full border-[1px] border-light-gray"/>
+          </div>
+
+          <div class="form-control">
+            <label class="block text-sm text-font-gray">
               <span class="label-text">Password</span>
             </label>
-            <input type="password" v-model="password" placeholder="" class="input input-bordered"/>
+            <input type="password" v-model="password" placeholder="" class="rounded w-full border-[1px] border-light-gray"/>
           </div>
           <div v-if="errors" class="text-error">
             {{errors}}
           </div>
-          <div class="form-control mt-6">
-            <button class="btn btn-primary" @click="login">Login</button>
-            <router-link to="/login/redeem" class="btn mt-3 btn-sm">Sign up with an invitation code</router-link>
+          <div class="form-control">
+            <button class="rounded-lg py-2 px-6 bg-font-gray text-white" @click="login">Sing In</button>
           </div>
         </div>
       </div>
@@ -35,32 +40,32 @@
 export default {
   data() {
     return {
-      email: '',
+      name: '',
       password: '',
       errors: ''
     }
   },
   methods: {
-    validateEmail() {
-      return String(this.email)
-          .toLowerCase()
-          .match(
-              /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-          )
+    validateName(name) {
+      if (name.length > 253 || name.length <= 0) {
+        return false
+      }
+      let reg = new RegExp(/[a-z][a-z0-9-.]{0,253}[a-z]$/, 'gm')
+      return reg.test(name)
     },
     async login() {
       try {
-        if (this.password.length <= 5 || this.email.length === 0) {
-          this.errors = 'Email and password fields are required. Password should be longer than 6 characters.'
+        if (this.password.length <= 5 || this.name.length === 0) {
+          this.errors = 'Name and password fields are required. Password should be longer than 6 characters.'
           return
         }
-        if (!this.validateEmail()) {
-          this.errors = 'Email field should be actual email address.'
+        if (!this.validateName(this.name)) {
+          this.errors = 'The name must comply with RFC 1123 Label Names standard.'
           return
         }
 
         const data = await this.$store.dispatch('login', {
-          email: this.email,
+          name: this.name,
           password: this.password,
         })
         if (!data) {

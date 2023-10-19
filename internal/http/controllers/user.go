@@ -41,6 +41,7 @@ func GetUsersList(c *gin.Context) {
 			Name:      elem.Name,
 			CreatedAt: cr,
 			UpdatedAt: up,
+			IsOwner:   elem.IsOwner,
 		})
 	}
 
@@ -64,7 +65,7 @@ func GetAuthorizedUser(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	c.JSON(http.StatusOK, u.UserResponse{Name: c.GetString("user_name"), CreatedAt: cr, UpdatedAt: up})
+	c.JSON(http.StatusOK, u.UserWithTokenResponse{Name: c.GetString("user_name"), IsOwner: c.GetBool("user_is_owner"), AccessToken: c.GetString("user_token"), CreatedAt: cr, UpdatedAt: up})
 }
 
 func GetUserByName(c *gin.Context) {
@@ -98,9 +99,15 @@ func GetUserByName(c *gin.Context) {
 func CreateUser(c *gin.Context) {
 	var request u.CreateUserRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
 		return
 	}
+
+	if !c.GetBool("user_is_owner") {
+		c.JSON(http.StatusUnprocessableEntity, u.ForbiddenResponse{Message: "Forbidden", Code: http.StatusForbidden})
+		return
+	}
+
 	request.Name = strings.ToLower(request.GetName())
 	if len(validation.IsDNS1123Label(request.Name)) > 0 {
 		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: "The name must comply with RFC 1123 Label Names standard.", Code: http.StatusUnprocessableEntity})
@@ -122,13 +129,14 @@ func CreateUser(c *gin.Context) {
 	model := models.User{
 		Name:     request.Name,
 		Password: hash,
-		IsOwner:  false,
+		IsOwner:  request.IsOwner,
 	}
 	err = user.CreateAccessToken(&model)
 	if err != nil {
 		panic(err)
 	}
 	t := time.Now()
+	model.IsOwner = request.IsOwner
 	model.CreatedAt = t.Format(time.RFC3339)
 	model.UpdatedAt = t.Format(time.RFC3339)
 	_, err = db.GetMongoClient().Database("registry").Collection("users").InsertOne(context.TODO(), model)
@@ -137,7 +145,7 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, u.UserResponse{Name: model.Name, CreatedAt: t, UpdatedAt: t, IsOwner: false})
+	c.JSON(http.StatusCreated, u.UserResponse{Name: model.Name, CreatedAt: t, UpdatedAt: t, IsOwner: request.IsOwner})
 }
 
 func DeleteUser(c *gin.Context) {

@@ -18,7 +18,7 @@ import (
 func Register(c *gin.Context) {
 	var request u.RegisterRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
 		return
 	}
 	request.Name = strings.ToLower(request.GetName())
@@ -63,24 +63,24 @@ func Register(c *gin.Context) {
 func Login(c *gin.Context) {
 	var request u.LoginRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
 		return
 	}
 	request.Name = strings.ToLower(request.GetName())
 	res := db.GetMongoClient().Database("registry").Collection("users").FindOne(context.TODO(), bson.D{{"name", request.Name}})
 	if res.Err() != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": res.Err().Error()})
+		c.JSON(http.StatusUnauthorized, u.UnauthorizedResponse{Message: res.Err().Error(), Code: http.StatusUnauthorized})
 		return
 	}
 
 	var model models.User
 	err := res.Decode(&model)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnauthorized, u.UnauthorizedResponse{Message: err.Error(), Code: http.StatusUnauthorized})
 		return
 	}
 	if model.AccessToken == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found."})
+		c.JSON(http.StatusUnauthorized, u.UnauthorizedResponse{Message: err.Error(), Code: http.StatusUnauthorized})
 		return
 	}
 
@@ -101,5 +101,5 @@ func Login(c *gin.Context) {
 		panic(err)
 	}
 
-	c.JSON(http.StatusCreated, u.UserWithTokenResponse{Name: model.Name, AccessToken: model.AccessToken, UpdatedAt: t, CreatedAt: cr, IsOwner: model.IsOwner})
+	c.JSON(http.StatusOK, u.UserWithTokenResponse{Name: model.Name, AccessToken: model.AccessToken, UpdatedAt: t, CreatedAt: cr, IsOwner: model.IsOwner})
 }

@@ -90,6 +90,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserWithTokenResponse'
+        '401':
+          description: 401 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '403':
+          description: 403 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
         '422':
           description: 422 response
           content:
@@ -185,7 +197,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/UserWithTokenResponse'
         '401':
           description: 401 response
           content:
@@ -559,10 +571,13 @@ components:
           type: string
         password_confirmation:
           type: string
+        is_owner:
+          type: boolean
       required:
         - name
         - password
         - password_confirmation
+        - is_owner
     UserResponse:
       type: object
       properties:

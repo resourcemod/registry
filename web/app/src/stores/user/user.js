@@ -8,32 +8,44 @@ export default {
         getUsers(state) {
             return state.usersList
         },
-        getUserById: (state) => (id) => {
-            return state.usersList.get(parseInt(id))
+        getUserByName: (state) => (name) => {
+            return state.usersList.get(name)
         },
     },
     mutations: {
         updateUser(state, data){
-            state.user.Name = data.user.Name
-            state.user.Token = data.user.Token
-            Cookies.set('rmod_auth', data.user.Token, { expires: 7, path: '/' })
+            state.user.name = data.name
+            state.user.access_token = data.access_token
+            state.user.created_at = data.created_at
+            state.user.updated_at = data.updated_at
+            state.user.is_owner = data.is_owner
+            Cookies.set('rmod_auth', data.access_token, { expires: 30, path: '/' })
         },
         updateUsers(state, data) {
             data.users.forEach((u) => {
-                state.usersList.set(u.ID, u)
+                state.usersList.set(u.name, u)
             })
+        },
+        deleteUser(state, data) {
+          state.usersList.delete(data.name)
+        },
+        putUserIntoMap(state, data) {
+            state.usersList.set(data.name, data)
         }
     },
     state: {
         user: {
-            Name: '',
-            Token: '',
+            name: '',
+            access_token: '',
+            created_at: '',
+            updated_at: '',
+            is_owner: false
         },
         usersList: new Map()
     },
     actions: {
         async getUsers(context) {
-            const token = Cookies.get('rmod_token')
+            const token = Cookies.get('rmod_auth')
             if (!token || token.length === 0) {
                 throw "Token undefined."
             }
@@ -41,7 +53,7 @@ export default {
                 const response = await fetch(API_ENDPOINT+'/api/v1/users', {
                     method: 'GET',
                     headers: {
-                        'x-auth-token': token,
+                        'Authorization': 'Bearer '+token,
                         'Content-Type': 'application/json;charset=utf-8',
                         'Accept': 'application/json',
                     }
@@ -53,12 +65,31 @@ export default {
                 throw e
             }
         },
+        async deleteUser(context, payload) {
+            const token = Cookies.get('rmod_auth')
+            if (!token || token.length === 0) {
+                throw "Token undefined."
+            }
+
+            try {
+                const response = await fetch(API_ENDPOINT+'/api/v1/users/'+payload.name, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': 'Bearer '+token,
+                        'Content-Type': 'application/json;charset=utf-8',
+                        'Accept': 'application/json',
+                    }
+                })
+                const data = await response.json()
+                context.commit('deleteUser', payload.name)
+                return data
+            } catch (e) {
+                throw e
+            }
+        },
         async login(context, payload) {
             try {
-                const body = JSON.stringify({
-                    name: payload.name,
-                    password: payload.password,
-                })
+                const body = JSON.stringify(payload)
                 const response = await fetch(API_ENDPOINT+'/api/v1/login', {
                     method: 'POST',
                     headers: {
@@ -78,7 +109,7 @@ export default {
             }
         },
         async getUser(context) {
-            const token = Cookies.get('rmod_token')
+            const token = Cookies.get('rmod_auth')
             if (!token || token.length === 0) {
                 throw "Token undefined."
             }
@@ -86,7 +117,7 @@ export default {
                 const response = await fetch(API_ENDPOINT+'/api/v1/user', {
                     method: 'GET',
                     headers: {
-                        'x-auth-token': token,
+                        'Authorization': 'Bearer '+token,
                         'Content-Type': 'application/json;charset=utf-8',
                         'Accept': 'application/json',
                     }
@@ -117,11 +148,8 @@ export default {
         },
         async register(context, payload) {
             try {
-                const body = JSON.stringify({
-                    name: payload.name,
-                    password: payload.password
-                })
-                const response = await fetch(API_ENDPOINT+'/api/v1/users', {
+                const body = JSON.stringify(payload)
+                const response = await fetch(API_ENDPOINT+'/api/v1/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json;charset=utf-8',
@@ -131,6 +159,29 @@ export default {
                 })
                 const data = await response.json()
                 context.commit('updateUser', data)
+                return data
+            } catch(e) {
+                throw e
+            }
+        },
+        async createUser(context, payload) {
+            try {
+                const token = Cookies.get('rmod_auth')
+                if (!token || token.length === 0) {
+                    throw "Token undefined."
+                }
+                const body = JSON.stringify(payload)
+                const response = await fetch(API_ENDPOINT+'/api/v1/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json;charset=utf-8',
+                        'Accept': 'application/json',
+                        'Authorization': 'Bearer '+token
+                    },
+                    body: body
+                })
+                const data = await response.json()
+                context.commit('putUserIntoMap', data)
                 return data
             } catch(e) {
                 throw e

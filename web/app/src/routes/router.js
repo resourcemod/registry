@@ -14,6 +14,8 @@ import PluginCreate from "../pages/plugins/PluginCreate.vue";
 import ExtensionsList from "../pages/extensions/ExtensionsList.vue";
 import ExtensionDetails from "../pages/extensions/ExtensionDetails.vue";
 import ExtensionCreate from "../pages/extensions/ExtensionCreate.vue";
+import UserDelete from "../pages/users/UserDelete.vue";
+import UserFeed from "../pages/users/UserFeed.vue";
 
 const router = createRouter({
     routes: [
@@ -58,6 +60,16 @@ const router = createRouter({
             component: UserCreate
         },
         {
+            path: '/users/feed',
+            name: 'Users.Feed',
+            component: UserFeed
+        },
+        {
+            path: '/users/:name/delete',
+            name: 'Users.Delete',
+            component: UserDelete
+        },
+        {
             path: '/content/plugin',
             name: 'Plugins.List',
             component: PluginsList
@@ -95,7 +107,7 @@ function authMiddleware() {
     const user = store.getters.getUser
 
     router.beforeEach(async (to, from) => {
-        if (!user.Token || user.Token.length === 0) {
+        if (!user.access_token || user.access_token.length === 0) {
             const data = await store.dispatch('checkIsSetupRequired')
 
             if (to.name !== 'Setup' && data.required === true) {
@@ -111,7 +123,7 @@ function authMiddleware() {
         }
 
         if (
-            user.Token &&
+            user.access_token &&
             (to.name === 'Login' || to.name === 'Register')
         ) {
             return {name: 'Dashboard'}

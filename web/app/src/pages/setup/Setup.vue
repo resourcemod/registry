@@ -1,38 +1,40 @@
 <template>
-  <div class="min-h-screen mx-auto">
-    <div class="flex-col lg:flex-row-reverse">
-      <div class="card flex-shrink-0 w-full max-w-sm shadow-2xl bg-base-100 rounded-xl">
+  <div class="h-screen w-screen flex flex-col justify-center items-center">
+    <div class="flex flex-col">
+      <div class="card flex-shrink-0 max-w-md bg-base-100">
         <div class="card-header text-center">
-          <h1 class="h1 text-2xl pt-4">ResourceMod Registry</h1>
-          <div class="text-sm">
-            Create owner account
+          <div>
+            <img src="/assets/logo.png" alt="Registry logo" class="w-full" />
+          </div>
+          <div class="text-light-gray mt-2 mb-2">
+            Last step before we start - create your first account
           </div>
         </div>
-        <div class="card-body w-[370px]">
+        <div class="flex flex-col gap-4 w-full">
           <div class="form-control">
-            <label class="label">
+            <label class="block text-sm text-font-gray">
               <span class="label-text">Name</span>
             </label>
-            <input type="text" v-model="name" placeholder="" class="input input-bordered"/>
+            <input type="text" v-model="name" placeholder="" class="rounded w-full border-[1px] border-light-gray"/>
           </div>
 
           <div class="form-control">
-            <label class="label">
+            <label class="block text-sm text-font-gray">
               <span class="label-text">Password</span>
             </label>
-            <input type="password" v-model="password" placeholder="" class="input input-bordered"/>
+            <input type="password" v-model="password" placeholder="" class="rounded w-full border-[1px] border-light-gray"/>
           </div>
-          <div class="form-control">
-            <label class="label">
+          <div class="form-control mb-4">
+            <label class="block text-sm text-font-gray">
               <span class="label-text">Confirm password</span>
             </label>
-            <input type="password" v-model="password_confirmation" placeholder="" class="input input-bordered"/>
+            <input type="password" v-model="password_confirmation" placeholder="" class="rounded w-full border-[1px] border-light-gray"/>
           </div>
           <div v-if="errors" class="text-error">
             {{errors}}
           </div>
-          <div class="form-control mt-6">
-            <button class="rounded-xl btn btn-primary" @click="createFirstAccount">Create an account</button>
+          <div class="form-control">
+            <button class="rounded-lg py-2 px-6 bg-font-gray text-white" @click="createFirstAccount">Create an account</button>
           </div>
         </div>
       </div>
@@ -74,6 +76,8 @@ export default {
           password: this.password,
           password_confirmation: this.password_confirmation
         })
+
+        location.reload()
 
       } catch (e) {
         this.errors = e
