@@ -10,12 +10,12 @@ import Register from "../pages/authorization/Register.vue";
 import UserCreate from "../pages/users/UserCreate.vue";
 import PluginsList from "../pages/plugins/PluginsList.vue";
 import PluginDetails from "../pages/plugins/PluginDetails.vue";
-import PluginCreate from "../pages/plugins/PluginCreate.vue";
 import ExtensionsList from "../pages/extensions/ExtensionsList.vue";
 import ExtensionDetails from "../pages/extensions/ExtensionDetails.vue";
 import ExtensionCreate from "../pages/extensions/ExtensionCreate.vue";
 import UserDelete from "../pages/users/UserDelete.vue";
 import UserFeed from "../pages/users/UserFeed.vue";
+import ContentCreate from "../pages/ContentCreate.vue";
 
 const router = createRouter({
     routes: [
@@ -70,32 +70,32 @@ const router = createRouter({
             component: UserDelete
         },
         {
-            path: '/content/plugin',
+            path: '/content/plugins',
             name: 'Plugins.List',
             component: PluginsList
         },
         {
-            path: '/content/plugin/:name',
+            path: '/content/plugins/:name',
             name: 'Plugins.Details',
             component: PluginDetails
         },
         {
-            path: '/content/plugin/create',
-            name: 'Plugins.Create',
-            component: PluginCreate
+            path: '/content/create',
+            name: 'Content.Create',
+            component: ContentCreate
         },
         {
-            path: '/content/extension',
+            path: '/content/extensions',
             name: 'Extensions.List',
             component: ExtensionsList
         },
         {
-            path: '/content/extension/:name',
+            path: '/content/extensions/:name',
             name: 'Extensions.Details',
             component: ExtensionDetails
         },
         {
-            path: '/content/extension/create',
+            path: '/content/extensions/create',
             name: 'Extensions.Create',
             component: ExtensionCreate
         },

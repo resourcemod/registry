@@ -1,6 +1,6 @@
 <template>
   <default-layout>
-    <div class="flex w-full h-full items-start">
+    <div class="flex w-full items-start">
       <div class="flex flex-col w-full gap-4">
         <div class="flex justify-between items-center border-y-[1px] border-white/5">
           <div class="text-xl pl-10 py-4">
@@ -12,7 +12,7 @@
           </div>
         </div>
         <div class="pl-4">
-          <div class="overflow-y-auto h-screen">
+          <div class="overflow-y-auto">
             <div class="w-full">
               <table class="min-w-full border-collapse border-spacing-y-2 border-spacing-x-2">
                 <thead class="hidden border-b lg:table-header-group">
