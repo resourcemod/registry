@@ -18,16 +18,16 @@ import (
 func Setup(c *gin.Context) {
 	var request u.RegisterRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
+		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
 		return
 	}
 	a, err := db.GetMongoClient().Database("registry").Collection("users").CountDocuments(context.TODO(), bson.D{{}})
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
+		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
 		return
 	}
 	if a > 0 {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Setup is not required."})
+		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: "Setup is not required.", Code: http.StatusUnprocessableEntity})
 		return
 	}
 	request.Name = strings.ToLower(request.GetName())
@@ -72,8 +72,8 @@ func Setup(c *gin.Context) {
 func GetSetupRequired(c *gin.Context) {
 	a, err := db.GetMongoClient().Database("registry").Collection("users").CountDocuments(context.TODO(), bson.D{{}})
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
+		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"required": a == 0})
+	c.JSON(http.StatusOK, u.SetupRequiredResponse{Required: a == 0})
 }

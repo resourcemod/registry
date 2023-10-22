@@ -127,17 +127,18 @@ export default {
         this.errors = ''
         if (!this.validateName(this.name)) {
           this.errors = 'The name must comply with RFC 1123 Label Names standard'
+          this.isLoading = false
           return
         }
         if (this.$store.getters.getPluginByName(this.name)) {
           this.errors = 'User with this name is already registered.'
+          this.isLoading = false
           return
         }
 
         const data = await this.$store.dispatch('createContent', {
           type: 'plugin',
           name: this.name,
-
         })
 
         location.href = '/content/plugins'

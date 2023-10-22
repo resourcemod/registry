@@ -2,7 +2,7 @@
 package models
 
 const (
-	TYPE_PLUGIN    string = "plugin"
+	TYPE_PLUGIN    string = "content"
 	TYPE_EXTENSION string = "extension"
 )
 

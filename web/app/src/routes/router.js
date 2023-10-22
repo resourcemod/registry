@@ -16,6 +16,7 @@ import ExtensionCreate from "../pages/extensions/ExtensionCreate.vue";
 import UserDelete from "../pages/users/UserDelete.vue";
 import UserFeed from "../pages/users/UserFeed.vue";
 import ContentCreate from "../pages/ContentCreate.vue";
+import Integrations from "../pages/integrations/Integrations.vue";
 
 const router = createRouter({
     routes: [
@@ -99,6 +100,11 @@ const router = createRouter({
             name: 'Extensions.Create',
             component: ExtensionCreate
         },
+        {
+            path: '/integrations',
+            name: 'Integrations.List',
+            component: Integrations
+        }
     ],
     history: createWebHistory()
 })

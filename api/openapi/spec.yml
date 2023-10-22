@@ -516,6 +516,109 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationErrorResponse'
+  /integrations:
+    get:
+      tags:
+        - Integrations
+      operationId: GetIntegrations
+      parameters: []
+      responses:
+        '200':
+          description: 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationsResponse'
+        '401':
+          description: 401 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '403':
+          description: 403 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+        '422':
+          description: 422 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+    post:
+      tags:
+        - Integrations
+      operationId: CreateIntegration
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateIntegrationRequest'
+        required: true
+      responses:
+        '201':
+          description: 201 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationResponse'
+        '401':
+          description: 401 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '403':
+          description: 403 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+        '422':
+          description: 422 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+  /integrations/{name}:
+    delete:
+      tags:
+        - Integrations
+      operationId: DeleteIntegration
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteIntegrationResponse'
+        '401':
+          description: 401 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '403':
+          description: 403 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+        '422':
+          description: 422 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
 components:
   schemas:
     RegisterRequest:
@@ -771,3 +874,57 @@ components:
           type: boolean
       required:
         - required
+    IntegrationResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - git
+        name:
+          type: string
+        host:
+          type: string
+        access_token:
+          type: string
+      required:
+        - type
+        - name
+        - host
+        - access_token
+    IntegrationsResponse:
+      type: object
+      properties:
+        integrations:
+          type: array
+          items:
+            $ref: '#/components/schemas/IntegrationResponse'
+      required:
+        - integrations
+    CreateIntegrationRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - git
+        name:
+          type: string
+        host:
+          type: string
+        access_token:
+          type: string
+      required:
+        - type
+        - name
+        - host
+        - access_token
+    DeleteIntegrationResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          enum:
+            - Deleted
+      required:
+        - message

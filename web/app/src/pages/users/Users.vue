@@ -11,7 +11,7 @@
             <router-link to="/users/create" class="bg-font-gray rounded text-white py-2 px-4 mr-2 lowercase text-sm"><UserPlusIcon class="w-4 h-4 inline -mt-[1px]"/> Create user</router-link>
           </div>
         </div>
-        <div class="pl-4">
+        <div class="p-6">
           <div class="overflow-y-auto">
             <div class="w-full">
               <table class="min-w-full border-collapse border-spacing-y-2 border-spacing-x-2">

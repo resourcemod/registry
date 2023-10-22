@@ -103,11 +103,6 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	if !c.GetBool("user_is_owner") {
-		c.JSON(http.StatusUnprocessableEntity, u.ForbiddenResponse{Message: "Forbidden", Code: http.StatusForbidden})
-		return
-	}
-
 	request.Name = strings.ToLower(request.GetName())
 	if len(validation.IsDNS1123Label(request.Name)) > 0 {
 		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: "The name must comply with RFC 1123 Label Names standard.", Code: http.StatusUnprocessableEntity})

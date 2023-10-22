@@ -31,6 +31,10 @@ func InitDBConnection() {
 	if err = db.RunCommand(context.TODO(), command).Decode(&result); err != nil {
 		log.Fatal(err)
 	}
+	command = bson.D{{"create", "integration"}}
+	if err = db.RunCommand(context.TODO(), command).Decode(&result); err != nil {
+		log.Fatal(err)
+	}
 
 	indexModel := mongo.IndexModel{
 		Keys:    bson.D{{"name", 1}},
@@ -42,6 +46,11 @@ func InitDBConnection() {
 	}
 
 	_, err = db.Collection("content").Indexes().CreateOne(context.TODO(), indexModel)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = db.Collection("integration").Indexes().CreateOne(context.TODO(), indexModel)
 	if err != nil {
 		panic(err)
 	}

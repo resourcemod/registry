@@ -18,8 +18,8 @@
                 </div>
 
                 <div class="form-control">
-                  <button v-if="!isLoading" class="rounded-md py-2 px-6 bg-font-gray text-white" @click="deleteUser">Yes, delete</button>
-                  <button v-else disabled="true" class="rounded-md py-2 px-6 bg-font-gray/80 text-white">Deleting..</button>
+                  <button v-if="!isLoading" class="rounded-md py-2 px-6 bg-red-500 text-white" @click="deleteUser">Yes, delete</button>
+                  <button v-else disabled="true" class="rounded-md py-2 px-6 bg-red-600 text-white">Deleting..</button>
                 </div>
               </div>
             </div>

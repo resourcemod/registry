@@ -4,6 +4,8 @@ import './app.css';
 import Cookies from 'js-cookie'
 import router from './routes/router.js'
 import store from './stores/index'
+import Toast from "vue-toastification";
+import "vue-toastification/dist/index.css";
 
 const preload = async () => {
     const token = Cookies.get('rmod_auth')
@@ -21,6 +23,7 @@ const preload = async () => {
     app.use(router)
     router.app = app
     app.use(store)
+    app.use(Toast)
     app.mount('#app');
 }
 

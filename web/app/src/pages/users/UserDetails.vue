@@ -7,7 +7,7 @@
               User details
             </div>
             <div>
-              <router-link :to="'/users/'+user.name+'/delete'" class="cursor-pointer bg-font-gray rounded text-white py-2 px-4 mr-2 lowercase text-sm"><UserMinusIcon class="w-4 h-4 inline -mt-[1px]"/> delete</router-link>
+              <router-link :to="'/users/'+user.name+'/delete'" class="cursor-pointer bg-red-500 rounded text-white py-2 px-4 mr-2 lowercase text-sm"><UserMinusIcon class="w-4 h-4 inline -mt-[1px]"/> delete</router-link>
             </div>
         </div>
         <div class="pl-4 mt-4">

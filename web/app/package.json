@@ -17,6 +17,7 @@
     "marked": "^9.1.2",
     "vue": "^3.2.31",
     "vue-router": "^4.2.2",
+    "vue-toastification": "^2.0.0-rc.5",
     "vuex": "^4.0.2"
   },
   "devDependencies": {
