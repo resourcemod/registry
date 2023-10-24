@@ -97,7 +97,7 @@
                   </select>
                 </div>
 
-                <div v-if="errors" class="text-error">
+                <div v-if="errors" class="text-error col-span-2">
                   {{ errors }}
                 </div>
                 <div class="form-control">
@@ -184,7 +184,7 @@ export default {
         location.href = '/content/'+this.type+'s'
 
       } catch (e) {
-        this.errors = e
+        this.errors = e.message
       }
       this.isLoading = false
     }
@@ -196,6 +196,9 @@ export default {
     }
     if (this.selected_integration !== '') {
       this.repositories = await this.$store.dispatch('getRepositories', this.selected_integration)
+    }
+    if (this.$route.query.type == 'extension') {
+      this.type = 'extension'
     }
   },
   computed: {

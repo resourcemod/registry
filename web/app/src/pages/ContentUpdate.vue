@@ -6,6 +6,9 @@
           <div class="text-xl pl-10 py-4">
             Update content
           </div>
+          <div>
+            <router-link :to="'/content/'+content.type+'/'+content.name+'/delete'" class="bg-font-gray rounded text-white py-2 px-4 mr-2 lowercase text-sm"><MinusIcon class="w-4 h-4 inline -mt-[1px]"/> delete</router-link>
+          </div>
         </div>
         <div class="pl-4 mt-4">
           <div class="overflow-y-auto h-screen" v-if="content">
@@ -102,6 +105,7 @@
 </template>
 <script setup lang="ts">
 import DefaultLayout from "../components/layouts/DefaultLayout.vue";
+import {MinusIcon} from "@heroicons/vue/24/solid";
 </script>
 <script lang="ts">
 import {mapGetters} from "vuex";
@@ -146,9 +150,6 @@ export default {
   },
   async mounted() {
     this.content = await this.$store.dispatch('getContentByTypeAndName', {type: this.$route.params.type, name: this.$route.params.name})
-  },
-  computed: {
-    ...mapGetters(['getUser', 'getIntegrations']),
   },
 }
 </script>

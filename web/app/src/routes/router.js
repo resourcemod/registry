@@ -10,12 +10,12 @@ import Register from "../pages/authorization/Register.vue";
 import UserCreate from "../pages/users/UserCreate.vue";
 import PluginsList from "../pages/plugins/PluginsList.vue";
 import ExtensionsList from "../pages/extensions/ExtensionsList.vue";
-import ExtensionDetails from "../pages/extensions/ExtensionDetails.vue";
 import UserDelete from "../pages/users/UserDelete.vue";
 import UserFeed from "../pages/users/UserFeed.vue";
 import ContentCreate from "../pages/ContentCreate.vue";
 import Integrations from "../pages/integrations/Integrations.vue";
 import ContentUpdate from "../pages/ContentUpdate.vue";
+import ContentDelete from "../pages/ContentDelete.vue";
 
 const router = createRouter({
     routes: [
@@ -85,14 +85,14 @@ const router = createRouter({
             component: ContentUpdate
         },
         {
+            path: '/content/:type/:name/delete',
+            name: 'Content.Delete',
+            component: ContentDelete
+        },
+        {
             path: '/content/extensions',
             name: 'Extensions.List',
             component: ExtensionsList
-        },
-        {
-            path: '/content/extensions/:name',
-            name: 'Extensions.Details',
-            component: ExtensionDetails
         },
         {
             path: '/integrations',

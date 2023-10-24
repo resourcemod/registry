@@ -7,7 +7,7 @@
             Plugins
           </div>
           <div>
-            <router-link to="/content/create" class="bg-font-gray rounded text-white py-2 px-4 mr-2 lowercase text-sm"><PlusIcon class="w-4 h-4 inline -mt-[1px]"/> Upload</router-link>
+            <router-link to="/content/create?type=plugin" class="bg-font-gray rounded text-white py-2 px-4 mr-2 lowercase text-sm"><PlusIcon class="w-4 h-4 inline -mt-[1px]"/> Upload</router-link>
           </div>
         </div>
         <div class="pl-4" v-if="getPlugins">
