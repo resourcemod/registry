@@ -82,15 +82,18 @@ func GetUserByName(c *gin.Context) {
 	var elem models.User
 	err := res.Decode(&elem)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
+		return
 	}
 	cr, err := time.Parse(time.RFC3339, elem.CreatedAt)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
+		return
 	}
 	up, err := time.Parse(time.RFC3339, elem.UpdatedAt)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
+		return
 	}
 
 	c.JSON(http.StatusOK, u.UserResponse{Name: elem.Name, CreatedAt: cr, UpdatedAt: up})

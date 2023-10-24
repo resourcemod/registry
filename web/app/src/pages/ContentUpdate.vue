@@ -4,15 +4,15 @@
       <div class="flex flex-col w-full">
         <div class="flex justify-between items-center border-y-[1px] border-white/5">
           <div class="text-xl pl-10 py-4">
-            Upload content
+            Update content
           </div>
         </div>
         <div class="pl-4 mt-4">
-          <div class="overflow-y-auto h-screen">
+          <div class="overflow-y-auto h-screen" v-if="content">
             <div class="flex flex-row gap-4 p-6">
               <div class="relative w-72 lg:w-96">
-                <input class="peer hidden" id="radio_1" type="radio" name="radio" v-model="type"
-                       v-bind:value="'plugin'" checked/>
+                <input disabled class="peer hidden" id="radio_1" type="radio" name="radio" v-model="content.type"
+                       v-bind:value="'plugin'"/>
                 <span
                     class="peer-checked:border-font-gray absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white"></span>
                 <label
@@ -27,7 +27,7 @@
                 </label>
               </div>
               <div class="relative w-72 lg:w-96">
-                <input class="peer hidden" id="radio_2" type="radio" name="radio" v-model="type"
+                <input disabled class="peer hidden" id="radio_2" type="radio" name="radio" v-model="content.type"
                        v-bind:value="'extension'"/>
                 <span
                     class="peer-checked:border-font-gray absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white"></span>
@@ -47,27 +47,31 @@
               <div class="grid grid-cols-2 gap-4 w-full">
                 <div class="form-control col-span-2 w-[300px]">
                   <label class="block text-sm text-font-gray">
-                    <span class="label-text">Name</span>
+                    <span class="label-text">Name (read-only)</span>
                   </label>
-                  <input type="text" v-model="name" placeholder=""
+                  <input disabled type="text" v-model="content.name" placeholder=""
                          class="rounded w-full border-[1px] border-light-gray"/>
                 </div>
 
-                <div class="form-control col-span-2 w-[300px]">
+                <div class="form-control w-[300px]">
                   <label class="block text-sm text-font-gray">
-                    <span class="label-text">Version</span>
+                    <span class="label-text">Version (change it to create a new revision)</span>
                   </label>
-                  <input type="text" v-model="version" placeholder=""
+                  <input type="text" v-model="content.version" placeholder=""
                          class="rounded w-full border-[1px] border-light-gray"/>
+                  <div class="text-gray-400 text-sm">
+                    <div class="label-text">Current version: {{content.release.version}}</div>
+                    <div class="label-text">Current git release: {{content.release.release_name}}</div>
+                  </div>
                 </div>
 
                 <div class="form-control col-span-2">
                   <label class="block text-sm text-font-gray">
                     <span class="label-text">Access</span>
                   </label>
-                  <select class="rounded w-[300px] border-[1px] border-light-gray" v-model="is_public">
-                    <option value="1">Public</option>
-                    <option value="0">Private</option>
+                  <select class="rounded w-[300px] border-[1px] border-light-gray" v-model="content.is_public">
+                    <option :value="true">Public</option>
+                    <option :value="false">Private</option>
                   </select>
                 </div>
 
@@ -75,34 +79,15 @@
                   <label class="block text-sm text-font-gray">
                     <span class="label-text">Description (plain text)</span>
                   </label>
-                  <textarea class="rounded w-full border-[1px] border-light-gray" v-model="description" cols="30" rows="10"></textarea>
+                  <textarea class="rounded w-full border-[1px] border-light-gray" v-model="content.description" cols="30" rows="10"></textarea>
                 </div>
 
-                <div class="form-control col-span-2">
-                  <label class="block text-sm text-font-gray">
-                    <span class="label-text">Git integration</span>
-                  </label>
-                  <select @change="updateRepositories" class="rounded w-[300px] border-[1px] border-light-gray" v-model="selected_integration">
-                    <option v-for="integration in integrations" :value="integration.name">{{ integration.name }}</option>
-                  </select>
-                </div>
-
-
-                <div class="form-control col-span-2" v-if="this.repositories">
-                  <label class="block text-sm text-font-gray">
-                    <span class="label-text">Repository</span>
-                  </label>
-                  <select class="rounded w-[300px] border-[1px] border-light-gray" v-model="selected_repository">
-                    <option v-for="repository in repositories" :value="repository">{{ repository.full_name }}</option>
-                  </select>
-                </div>
-
-                <div v-if="errors" class="text-error">
+                <div v-if="errors" class="col-span-2 text-error">
                   {{ errors }}
                 </div>
                 <div class="form-control">
                   <button v-if="!isLoading" class="rounded-md py-2 px-6 bg-font-gray text-white" @click="uploadContent">
-                    Create
+                    Update
                   </button>
                   <button v-else disabled="true" class="rounded-md py-2 px-6 bg-font-gray/80 text-white">Uploading..
                   </button>
@@ -124,79 +109,43 @@ import {mapGetters} from "vuex";
 export default {
   data() {
     return {
-      name: '',
-      type: 'plugin',
-      version: '1.0',
-      is_public: 1,
-      description: '',
-      repositories: [],
-      integrations: [],
-      selected_repository: '',
-      selected_integration: '',
+      content: {
+        name: '',
+        type: 'plugin',
+        version: '1.0',
+        is_public: 1,
+        description: '',
+        release: {
+          release_name: '',
+          version: '',
+        }
+      },
       errors: '',
       isLoading: false
     }
   },
   methods: {
-    validateName(name) {
-      if (name.length > 253 || name.length <= 0) {
-        return false
-      }
-      let reg = new RegExp(/[a-z][a-z0-9-.]{0,253}[a-z]$/, 'gm')
-      return reg.test(name)
-    },
-    async updateRepositories() {
-      if (this.selected_integration !== '') {
-        const data = await this.$store.dispatch('getRepositories', {name: this.selected_integration})
-        this.repositories = data.repositories
-      }
-    },
     async uploadContent() {
       this.isLoading = true
       try {
         this.errors = ''
-        if (!this.validateName(this.name)) {
-          this.errors = 'The name must comply with RFC 1123 Label Names standard'
-          this.isLoading = false
-          return
-        }
-        if (this.$store.getters.getContentByName(this.type, this.name)) {
-          this.errors = 'Name is already taken.'
-          this.isLoading = false
-          return
-        }
 
-        if (this.selected_repository === '') {
-          this.errors = 'Repository is required.'
-          this.isLoading = false
-          return
-        }
-
-        await this.$store.dispatch('uploadContent', {
-          name: this.name,
-          description: this.description,
-          version: this.version,
-          type: this.type,
-          is_public: !!this.is_public,
-          repository: this.selected_repository
+        await this.$store.dispatch('updateContent', {
+          type: this.content.type,
+          name: this.content.name,
+          description: this.content.description,
+          version: this.content.version,
+          is_public: !!this.content.is_public,
         })
 
-        location.href = '/content/'+this.type+'s'
-
       } catch (e) {
-        this.errors = e
+        this.errors = e.message
       }
       this.isLoading = false
     }
   },
   async mounted() {
-    if (this.integrations.length === 0) {
-      const data  = await this.$store.dispatch('getIntegrations')
-      this.integrations = data.integrations
-    }
-    if (this.selected_integration !== '') {
-      this.repositories = await this.$store.dispatch('getRepositories', this.selected_integration)
-    }
+    this.content = await this.$store.dispatch('getContentByTypeAndName', {type: this.$route.params.type, name: this.$route.params.name})
   },
   computed: {
     ...mapGetters(['getUser', 'getIntegrations']),

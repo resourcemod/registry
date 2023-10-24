@@ -9,14 +9,13 @@ import Setup from "../pages/setup/Setup.vue";
 import Register from "../pages/authorization/Register.vue";
 import UserCreate from "../pages/users/UserCreate.vue";
 import PluginsList from "../pages/plugins/PluginsList.vue";
-import PluginDetails from "../pages/plugins/PluginDetails.vue";
 import ExtensionsList from "../pages/extensions/ExtensionsList.vue";
 import ExtensionDetails from "../pages/extensions/ExtensionDetails.vue";
-import ExtensionCreate from "../pages/extensions/ExtensionCreate.vue";
 import UserDelete from "../pages/users/UserDelete.vue";
 import UserFeed from "../pages/users/UserFeed.vue";
 import ContentCreate from "../pages/ContentCreate.vue";
 import Integrations from "../pages/integrations/Integrations.vue";
+import ContentUpdate from "../pages/ContentUpdate.vue";
 
 const router = createRouter({
     routes: [
@@ -76,14 +75,14 @@ const router = createRouter({
             component: PluginsList
         },
         {
-            path: '/content/plugins/:name',
-            name: 'Plugins.Details',
-            component: PluginDetails
-        },
-        {
             path: '/content/create',
             name: 'Content.Create',
             component: ContentCreate
+        },
+        {
+            path: '/content/:type/:name',
+            name: 'Content.Update',
+            component: ContentUpdate
         },
         {
             path: '/content/extensions',
@@ -94,11 +93,6 @@ const router = createRouter({
             path: '/content/extensions/:name',
             name: 'Extensions.Details',
             component: ExtensionDetails
-        },
-        {
-            path: '/content/extensions/create',
-            name: 'Extensions.Create',
-            component: ExtensionCreate
         },
         {
             path: '/integrations',

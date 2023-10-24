@@ -96,5 +96,24 @@ export default {
             context.commit('putIntegrationIntoMap', data)
             return data
         },
+        async getRepositories(context, payload) {
+            const token = Cookies.get('rmod_auth')
+            if (!token || token.length === 0) {
+                throw "Token undefined."
+            }
+            try {
+                const response = await fetch(API_ENDPOINT + '/api/v1/integrations/'+payload.name+'/repositories', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json;charset=utf-8',
+                        'Accept': 'application/json',
+                    }
+                })
+                return await response.json()
+            } catch (e) {
+                throw e
+            }
+        },
     }
 }

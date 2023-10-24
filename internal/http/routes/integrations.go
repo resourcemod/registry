@@ -8,7 +8,8 @@ import (
 )
 
 func initIntegrationsRoutes(rg *gin.RouterGroup) {
-	rg.GET("/integration", middlewares.HasToken(), middlewares.IsOwner(), controllers.GetIntegrations)
-	rg.POST("/integration", middlewares.HasToken(), middlewares.IsOwner(), controllers.CreateIntegration)
-	rg.DELETE("/integration/:name", middlewares.HasToken(), middlewares.IsOwner(), controllers.DeleteIntegration)
+	rg.GET("/integrations", middlewares.HasToken(), middlewares.IsOwner(), controllers.GetIntegrations)
+	rg.POST("/integrations", middlewares.HasToken(), middlewares.IsOwner(), controllers.CreateIntegration)
+	rg.DELETE("/integrations/:name", middlewares.HasToken(), middlewares.IsOwner(), controllers.DeleteIntegration)
+	rg.GET("/integrations/:name/repositories", middlewares.HasToken(), middlewares.IsOwner(), controllers.GetRepositories)
 }

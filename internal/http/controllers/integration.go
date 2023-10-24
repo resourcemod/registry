@@ -21,11 +21,6 @@ func CreateIntegration(c *gin.Context) {
 		return
 	}
 
-	if !c.GetBool("user_is_owner") {
-		c.JSON(http.StatusForbidden, u.ForbiddenResponse{Message: "Forbidden", Code: http.StatusForbidden})
-		return
-	}
-
 	request.Name = strings.ToLower(request.GetName())
 	if len(validation.IsDNS1123Label(request.Name)) > 0 {
 		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: "The name must comply with RFC 1123 Label Names standard.", Code: http.StatusUnprocessableEntity})
@@ -46,7 +41,7 @@ func CreateIntegration(c *gin.Context) {
 		AccessToken: request.GetAccessToken(),
 	}
 
-	_, err = db.GetMongoClient().Database("registry").Collection("integration").InsertOne(context.TODO(), model)
+	_, err = db.GetMongoClient().Database("registry").Collection("integrations").InsertOne(context.TODO(), model)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
 		return
@@ -56,7 +51,7 @@ func CreateIntegration(c *gin.Context) {
 }
 
 func GetIntegrations(c *gin.Context) {
-	collection := db.GetMongoClient().Database("registry").Collection("integration")
+	collection := db.GetMongoClient().Database("registry").Collection("integrations")
 	var integrations []u.IntegrationResponse
 
 	cur, err := collection.Find(context.TODO(), bson.D{{}})
@@ -91,7 +86,7 @@ func GetIntegrations(c *gin.Context) {
 func DeleteIntegration(c *gin.Context) {
 	var request u.DeleteIntegrationParams
 	request.Name = strings.ToLower(c.Param("name"))
-	res := db.GetMongoClient().Database("registry").Collection("integration").FindOneAndDelete(context.TODO(), bson.D{{
+	res := db.GetMongoClient().Database("registry").Collection("integrations").FindOneAndDelete(context.TODO(), bson.D{{
 		"name", request.Name,
 	}})
 	if res.Err() != nil {
@@ -100,4 +95,39 @@ func DeleteIntegration(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, u.DeleteIntegrationResponse{Message: "Deleted"})
+}
+
+func GetRepositories(c *gin.Context) {
+	var request u.GetRepositoriesParams
+	request.Name = c.Param("name")
+
+	res := db.GetMongoClient().Database("registry").Collection("integrations").FindOne(context.TODO(), bson.D{{
+		"name", request.Name,
+	}})
+	if res.Err() != nil {
+		c.JSON(http.StatusNotFound, u.ValidationErrorResponse{Message: res.Err().Error(), Code: http.StatusNotFound})
+		return
+	}
+
+	var model models.Integration
+	err := res.Decode(&model)
+
+	client := github.NewClient(nil).WithAuthToken(model.AccessToken)
+	r, _, err := client.Repositories.List(context.TODO(), "", &github.RepositoryListOptions{})
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
+		return
+	}
+
+	var repositories []u.Repository
+
+	for _, o := range r {
+		repositories = append(repositories, u.Repository{
+			Integration: model.Name,
+			GitURL:      o.GetGitURL(),
+			FullName:    o.GetFullName(),
+		})
+	}
+	c.JSON(http.StatusOK, u.RepositoriesResponse{Repositories: repositories})
+
 }

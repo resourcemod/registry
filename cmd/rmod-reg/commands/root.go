@@ -13,9 +13,9 @@ var (
 // NewRootCommand is root command entry point
 func NewRootCommand() *cobra.Command {
 	root = &cobra.Command{
-		Use:   "rmod-rmod-reg [command] [flags]",
-		Short: "rmod-rmod-reg - An opensource plugins rmod-reg package.",
-		Long:  "rmod-rmod-reg - Share your plugins using the Resource Mod content manager. Store your code safely in your repository using rmod rmod-reg.",
+		Use:   "rmod-reg [command] [flags]",
+		Short: "rmod-reg - An opensource plugins rmod-reg package.",
+		Long:  "rmod-reg - Share your plugins using the Resource Mod content manager. Store your code safely in your repository using rmod rmod-reg.",
 	}
 
 	root.AddCommand(serve.NewServeCommand())

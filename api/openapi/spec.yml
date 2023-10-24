@@ -583,6 +583,47 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationErrorResponse'
+  /integrations/{name}/repositories:
+    get:
+      tags:
+        - Integrations
+      operationId: GetRepositories
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoriesResponse'
+        '401':
+          description: 401 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '403':
+          description: 403 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+        '422':
+          description: 422 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
   /integrations/{name}:
     delete:
       tags:
@@ -765,6 +806,35 @@ components:
             - Deleted
       required:
         - message
+    Repository:
+      type: object
+      properties:
+        integration:
+          type: string
+        full_name:
+          type: string
+        git_url:
+          type: string
+      required:
+        - integration
+        - full_name
+        - git_url
+    Release:
+      type: object
+      properties:
+        content_name:
+          type: string
+        release_name:
+          type: string
+        version:
+          type: string
+        assets_url:
+          type: string
+      required:
+        - content_name
+        - release_name
+        - version
+        - assets_url
     ContentResponse:
       type: object
       properties:
@@ -783,6 +853,10 @@ components:
           type: boolean
         user_name:
           type: string
+        repository:
+          $ref: '#/components/schemas/Repository'
+        release:
+          $ref: '#/components/schemas/Release'
         created_at:
           type: string
           format: date-time
@@ -796,6 +870,8 @@ components:
         - description
         - is_public
         - user_name
+        - repository
+        - release
         - created_at
         - updated_at
     ContentListResponse:
@@ -834,7 +910,7 @@ components:
         is_public:
           type: boolean
         repository:
-          type: string
+          $ref: '#/components/schemas/Repository'
       required:
         - name
         - description
@@ -849,14 +925,11 @@ components:
           type: string
         is_public:
           type: boolean
-        repository:
-          type: string
         version:
           type: string
       required:
         - description
         - is_public
-        - repository
         - version
     DeleteContentResponse:
       type: object
@@ -901,6 +974,15 @@ components:
             $ref: '#/components/schemas/IntegrationResponse'
       required:
         - integrations
+    RepositoriesResponse:
+      type: object
+      properties:
+        repositories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Repository'
+      required:
+        - repositories
     CreateIntegrationRequest:
       type: object
       properties:

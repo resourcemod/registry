@@ -9,8 +9,8 @@
         </div>
         <div class="pl-4">
           <div class="overflow-y-auto">
-            <div class="w-full grid grid-cols-3 gap-6 p-6 py-0">
-              <div class="w-full flex flex-col gap-4 rounded-md border-[1px] border-gray-200 p-6">
+            <div class="w-full grid grid-cols-3 gap-6 p-4 py-0">
+              <div class="w-full flex flex-col gap-4 rounded-md border-[1px] border-gray-200 p-4">
                 <div class="form-control">
                   <label class="block text-sm text-font-gray">
                     <span class="label-text">Host</span>
@@ -45,7 +45,7 @@
               </div>
 
 
-              <div class="w-full flex flex-col gap-4 rounded-md border-[1px] border-gray-200 p-6" v-for="[key, integration] in getIntegrations">
+              <div class="w-full flex flex-col gap-4 rounded-md border-[1px] border-gray-200 p-4" v-for="[key, integration] in getIntegrations">
                 <div class="form-control">
                   <label class="block text-sm text-font-gray">
                     <span class="label-text">Host</span>

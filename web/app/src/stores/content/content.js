@@ -1,4 +1,5 @@
 import Cookies from 'js-cookie'
+
 const API_ENDPOINT = import.meta.env.DEV ? 'http://localhost:8888' : window.location.origin
 export default {
     getters: {
@@ -8,37 +9,40 @@ export default {
         getExtensions(state) {
             return state.extensions
         },
-        getPluginByName: (state) => (name) => {
-            return state.plugins.get(name)
-        },
-        getExtensionByName: (state) => (name) => {
+        getContentByName: (state) => (type, name) => {
+            if (type === 'plugin') {
+                return state.plugins.get(name)
+            }
             return state.extensions.get(name)
         },
     },
     mutations: {
-        updatePlugins(state, data) {
-            if (!data.content) {
+        updateContent(state, data) {
+            if (!data) {
                 return
             }
-            data.content.forEach((u) => {
-                state.plugins.set(u.name, u)
-            })
-        },
-        updatePlugin(state, data) {
-            state.plugins.set(data.content.name, data)
+            if (data.type === 'plugin') {
+                state.plugins.set(data.name, data)
+                return
+            }
+            state.extensions.set(data.name, data)
         },
         deletePlugin(state, data) {
-          state.plugins.delete(data)
+            state.plugins.delete(data)
         },
         addPlugin(state, data) {
             state.plugins.set(data.name, data)
         },
-        updateExtensions(state, data) {
+        updateAllContent(state, data) {
             if (!data.content) {
                 return
             }
             data.content.forEach((u) => {
-                state.extensions.set(u.name, u)
+                if (u.type === 'plugin') {
+                    state.plugins.set(u.name, u)
+                } else {
+                    state.extensions.set(u.name, u)
+                }
             })
         },
         updateExtension(state, data) {
@@ -61,25 +65,40 @@ export default {
             if (!token || token.length === 0) {
                 throw "Token undefined."
             }
-            try {
-                const response = await fetch(API_ENDPOINT+'/api/v1/content/'+payload.type, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': 'Bearer '+token,
-                        'Content-Type': 'application/json;charset=utf-8',
-                        'Accept': 'application/json',
-                    }
-                })
-                const data = await response.json()
-                if (payload.type === "plugin") {
-                    context.commit('updatePlugins', data)
-                    return data
+            const response = await fetch(API_ENDPOINT + '/api/v1/content/' + payload.type, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json;charset=utf-8',
+                    'Accept': 'application/json',
                 }
-                context.commit("updateExtensions", data)
-                return data
-            } catch (e) {
-                throw e
+            })
+            const data = await response.json()
+            if (!response.ok) {
+                throw data
             }
+            context.commit('updateAllContent', data)
+            return data
+        },
+        async getContentByTypeAndName(context, payload) {
+            const token = Cookies.get('rmod_auth')
+            if (!token || token.length === 0) {
+                throw "Token undefined."
+            }
+            const response = await fetch(API_ENDPOINT + '/api/v1/content/' + payload.type + '/' + payload.name, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json;charset=utf-8',
+                    'Accept': 'application/json',
+                }
+            })
+            const data = await response.json()
+            if (!response.ok) {
+                throw data
+            }
+            context.commit('updateContent', data)
+            return data
         },
         async deleteContent(context, payload) {
             const token = Cookies.get('rmod_auth')
@@ -87,134 +106,94 @@ export default {
                 throw "Token undefined."
             }
 
-            try {
-                const response = await fetch(API_ENDPOINT+'/api/v1/content/'+payload.type+'/'+payload.name, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': 'Bearer '+token,
-                        'Content-Type': 'application/json;charset=utf-8',
-                        'Accept': 'application/json',
-                    }
-                })
-                const data = await response.json()
-                if (payload.type === "plugin") {
-                    context.commit('deletePlugin', data)
-                    return data
+            const response = await fetch(API_ENDPOINT + '/api/v1/content/' + payload.type + '/' + payload.name, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json;charset=utf-8',
+                    'Accept': 'application/json',
                 }
-                context.commit("deleteExtension", data)
-                return data
-            } catch (e) {
-                throw e
+            })
+            const data = await response.json()
+            if (!response.ok) {
+                throw data
             }
+            if (payload.type === "plugin") {
+                context.commit('deletePlugin', data)
+                return data
+            }
+            context.commit("deleteExtension", data)
+            return data
         },
         async getContent(context, payload) {
             const token = Cookies.get('rmod_auth')
             if (!token || token.length === 0) {
                 throw "Token undefined."
             }
-            try {
-                const body = JSON.stringify(payload)
-                const response = await fetch(API_ENDPOINT+'/api/v1/content/'+payload.type+'/'+payload.name, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': 'Bearer '+token,
-                        'Content-Type': 'application/json;charset=utf-8',
-                        'Accept': 'application/json',
-                    },
-                    body: body
-                })
-                const data = await response.json()
-                if (!response.ok) {
-                    throw response.message
-                }
-                if (payload.type === "plugin") {
-                    context.commit('updatePlugin', data)
-                    return data
-                }
-                context.commit("updateExtension", data)
-                return data
-            } catch(e) {
-                throw e
+            const body = JSON.stringify(payload)
+            const response = await fetch(API_ENDPOINT + '/api/v1/content/' + payload.type + '/' + payload.name, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json;charset=utf-8',
+                    'Accept': 'application/json',
+                },
+                body: body
+            })
+            const data = await response.json()
+            if (!response.ok) {
+                throw data
             }
+            if (payload.type === "plugin") {
+                context.commit('updatePlugin', data)
+                return data
+            }
+            context.commit("updateExtension", data)
+            return data
         },
-        async getUser(context) {
+        async uploadContent(context, payload) {
             const token = Cookies.get('rmod_auth')
             if (!token || token.length === 0) {
                 throw "Token undefined."
             }
-            try {
-                const response = await fetch(API_ENDPOINT+'/api/v1/user', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': 'Bearer '+token,
-                        'Content-Type': 'application/json;charset=utf-8',
-                        'Accept': 'application/json',
-                    }
-                })
-                const data = await response.json()
-                context.commit('updateUser', data)
-                return data
-            } catch (e) {
-                throw e
+            const body = JSON.stringify(payload)
+            const response = await fetch(API_ENDPOINT + '/api/v1/content', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json;charset=utf-8',
+                    'Accept': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: body
+            })
+            if (!response.ok) {
+                throw await response.json()
             }
+            const data = await response.json()
+            context.commit('updateContent', data)
+            return data
         },
-
-        async createFirstAccount(context, payload) {
-            try {
-                const body = JSON.stringify(payload)
-                const response = await fetch(API_ENDPOINT+'/api/v1/setup/create', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json;charset=utf-8',
-                        'Accept': 'application/json',
-                    },
-                    body: body
-                })
-                return await response.json()
-            } catch(e) {
-                throw e
+        async updateContent(context, payload) {
+            const token = Cookies.get('rmod_auth')
+            if (!token || token.length === 0) {
+                throw "Token undefined."
             }
-        },
-        async register(context, payload) {
-            try {
-                const body = JSON.stringify(payload)
-                const response = await fetch(API_ENDPOINT+'/api/v1/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json;charset=utf-8',
-                        'Accept': 'application/json',
-                    },
-                    body: body
-                })
-                const data = await response.json()
-                context.commit('updateUser', data)
-                return data
-            } catch(e) {
-                throw e
+            const body = JSON.stringify(payload)
+            const response = await fetch(API_ENDPOINT + '/api/v1/content/' + payload.type + '/' + payload.name, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json;charset=utf-8',
+                    'Accept': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: body
+            })
+            if (!response.ok) {
+                throw await response.json()
             }
-        },
-        async createUser(context, payload) {
-            try {
-                const token = Cookies.get('rmod_auth')
-                if (!token || token.length === 0) {
-                    throw "Token undefined."
-                }
-                const body = JSON.stringify(payload)
-                const response = await fetch(API_ENDPOINT+'/api/v1/users', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json;charset=utf-8',
-                        'Accept': 'application/json',
-                        'Authorization': 'Bearer '+token
-                    },
-                    body: body
-                })
-                const data = await response.json()
-                context.commit('putUserIntoMap', data)
-                return data
-            } catch(e) {
-                throw e
-            }
+            const data = await response.json()
+            context.commit('updateContent', data)
+            return data
         },
     }
 }
