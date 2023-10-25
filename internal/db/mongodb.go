@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
+	"os"
 	"time"
 )
 
@@ -15,7 +16,11 @@ var client *mongo.Client
 func InitDBConnection() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
+	mongodbDSN := os.Getenv("DB_DSN")
+	if len(mongodbDSN) == 0 {
+		mongodbDSN = "mongodb://localhost:27017"
+	}
+	c, err := mongo.Connect(ctx, options.Client().ApplyURI(mongodbDSN))
 	if err != nil {
 		panic(err)
 	}
