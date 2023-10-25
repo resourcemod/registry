@@ -60,6 +60,7 @@ docker run -e DB_DSN=mongodb://host:port -e JWT_SECRET_KEY=*your_secret_jwt_key*
 - [ ] Correct JWT workflow (token validation)
 - [ ] Code refactoring and code quality tools
 - [ ] Private plugins/extensions download support
+- [ ] Settings
 
 #### We use
 1. MongoDB as main database
