@@ -13,12 +13,11 @@ You deploy a docker image or use a binary file to run the REST API of the regist
 
 #### Web UI
 We have created a web interface to make it easy to work with the registry. Through web-ui you can create your account, manage users, add plugins, add extensions (c-modules), manage integrations with git.
-<details>
-  <summary>Some screenshots of WebUI</summary>
-![Users Page](https://github.com/ResourceMod/registry/blob/main/examples/images/users.png "Users page")
-![Upload content Page](https://github.com/ResourceMod/registry/blob/main/examples/images/upload.png "Upload content Page")
-![Git integration Page](https://github.com/ResourceMod/registry/blob/main/examples/images/github.png "Git integration page")
-</details>
+
+![Users Page](examples/images/users.png "Users page")
+![Upload content Page](examples/images/upload.png "Upload content Page")
+![Git integration Page](examples/images/github.png "Git integration page")
+
 
 #### How to build
 1. Pull repository
