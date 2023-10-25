@@ -397,7 +397,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationErrorResponse'
-  /content/{type}/{name}/download:
+  /content/{type}/{name}/{version}/download:
     get:
       tags:
         - Content
@@ -411,6 +411,11 @@ paths:
             enum:
               - plugin
               - extension
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
         - name: name
           in: path
           required: true
@@ -819,28 +824,10 @@ components:
         - integration
         - full_name
         - git_url
-    Release:
-      type: object
-      properties:
-        content_name:
-          type: string
-        release_name:
-          type: string
-        version:
-          type: string
-        assets_url:
-          type: string
-      required:
-        - content_name
-        - release_name
-        - version
-        - assets_url
     ContentResponse:
       type: object
       properties:
         name:
-          type: string
-        version:
           type: string
         type:
           type: string
@@ -855,8 +842,6 @@ components:
           type: string
         repository:
           $ref: '#/components/schemas/Repository'
-        release:
-          $ref: '#/components/schemas/Release'
         created_at:
           type: string
           format: date-time
@@ -865,13 +850,11 @@ components:
           format: date-time
       required:
         - name
-        - version
         - type
         - description
         - is_public
         - user_name
         - repository
-        - release
         - created_at
         - updated_at
     ContentListResponse:
@@ -888,9 +871,6 @@ components:
       properties:
         link:
           type: string
-        expired_at:
-          type: string
-          format: date-time
       required:
         - link
     UploadContentRequest:
@@ -899,8 +879,6 @@ components:
         name:
           type: string
         description:
-          type: string
-        version:
           type: string
         type:
           type: string
@@ -914,7 +892,6 @@ components:
       required:
         - name
         - description
-        - version
         - type
         - is_public
         - repository
@@ -925,12 +902,9 @@ components:
           type: string
         is_public:
           type: boolean
-        version:
-          type: string
       required:
         - description
         - is_public
-        - version
     DeleteContentResponse:
       type: object
       properties:

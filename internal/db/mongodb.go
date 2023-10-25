@@ -31,10 +31,6 @@ func InitDBConnection() {
 	if err = db.RunCommand(context.TODO(), command).Decode(&result); err != nil {
 		log.Fatal(err)
 	}
-	command = bson.D{{"create", "content_revisions"}}
-	if err = db.RunCommand(context.TODO(), command).Decode(&result); err != nil {
-		log.Fatal(err)
-	}
 	command = bson.D{{"create", "integrations"}}
 	if err = db.RunCommand(context.TODO(), command).Decode(&result); err != nil {
 		log.Fatal(err)
@@ -55,19 +51,6 @@ func InitDBConnection() {
 	}
 
 	_, err = db.Collection("integrations").Indexes().CreateOne(context.TODO(), indexModel)
-	if err != nil {
-		panic(err)
-	}
-
-	indexModel = mongo.IndexModel{
-		Keys: bson.D{
-			{"content_name", 1},
-			{"version", 1},
-			{"release_name", 1},
-		},
-		Options: options.Index().SetUnique(true),
-	}
-	_, err = db.Collection("content_revisions").Indexes().CreateOne(context.TODO(), indexModel)
 	if err != nil {
 		panic(err)
 	}

@@ -19,7 +19,7 @@
               <div v-else>
                 <div class="grid grid-cols-3 gap-6">
                   <div class="border-[1px] rounded-lg p-4" v-for="[key, content] in getPlugins">
-                    <div class="text-medium truncate"><span class="bg-gray-200 px-2 py-1 text-sm mr-2 rounded">{{content.is_public ? 'Public': 'Private'}}</span>{{content.name}}:{{content.version}}</div>
+                    <div class="text-medium truncate"><span class="bg-gray-200 px-2 py-1 text-sm mr-2 rounded">{{content.is_public ? 'Public': 'Private'}}</span>{{content.name}}</div>
                     <div class="text-medium truncate text-gray-400">{{content.description}}</div>
                     <div class="text-medium w-full truncate">Created {{formatDistance(new Date(content.created_at), new Date())}}</div>
                     <div class="text-medium w-full truncate">Updated {{formatDistance(new Date(content.updated_at), new Date())}}</div>

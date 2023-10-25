@@ -53,14 +53,6 @@
                          class="rounded w-full border-[1px] border-light-gray"/>
                 </div>
 
-                <div class="form-control col-span-2 w-[300px]">
-                  <label class="block text-sm text-font-gray">
-                    <span class="label-text">Version</span>
-                  </label>
-                  <input type="text" v-model="version" placeholder=""
-                         class="rounded w-full border-[1px] border-light-gray"/>
-                </div>
-
                 <div class="form-control col-span-2">
                   <label class="block text-sm text-font-gray">
                     <span class="label-text">Access</span>
@@ -126,7 +118,6 @@ export default {
     return {
       name: '',
       type: 'plugin',
-      version: '1.0',
       is_public: 1,
       description: '',
       repositories: [],
@@ -175,7 +166,6 @@ export default {
         await this.$store.dispatch('uploadContent', {
           name: this.name,
           description: this.description,
-          version: this.version,
           type: this.type,
           is_public: !!this.is_public,
           repository: this.selected_repository

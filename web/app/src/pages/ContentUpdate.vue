@@ -56,18 +56,6 @@
                          class="rounded w-full border-[1px] border-light-gray"/>
                 </div>
 
-                <div class="form-control w-[300px]">
-                  <label class="block text-sm text-font-gray">
-                    <span class="label-text">Version (change it to create a new revision)</span>
-                  </label>
-                  <input type="text" v-model="content.version" placeholder=""
-                         class="rounded w-full border-[1px] border-light-gray"/>
-                  <div class="text-gray-400 text-sm">
-                    <div class="label-text">Current version: {{content.release.version}}</div>
-                    <div class="label-text">Current git release: {{content.release.release_name}}</div>
-                  </div>
-                </div>
-
                 <div class="form-control col-span-2">
                   <label class="block text-sm text-font-gray">
                     <span class="label-text">Access</span>
@@ -116,12 +104,10 @@ export default {
       content: {
         name: '',
         type: 'plugin',
-        version: '1.0',
         is_public: 1,
         description: '',
         release: {
           release_name: '',
-          version: '',
         }
       },
       errors: '',
@@ -138,7 +124,6 @@ export default {
           type: this.content.type,
           name: this.content.name,
           description: this.content.description,
-          version: this.content.version,
           is_public: !!this.content.is_public,
         })
 

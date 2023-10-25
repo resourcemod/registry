@@ -14,7 +14,6 @@ type Repository struct {
 
 type Content struct {
 	Name        string     `bson:"name"`
-	Version     string     `bson:"version"`
 	Type        string     `bson:"type"`
 	Description string     `bson:"description"`
 	IsPublic    bool       `bson:"is_public"`
@@ -22,11 +21,4 @@ type Content struct {
 	Repository  Repository `bson:"repository"`
 	CreatedAt   string     `bson:"created_at"`
 	UpdatedAt   string     `bson:"updated_at"`
-}
-
-type ContentRevision struct {
-	ContentName string `bson:"content_name"`
-	Version     string `bson:"version"`
-	ReleaseName string `bson:"release_name"`
-	AssetsUrl   string `bson:"assets_url"`
 }

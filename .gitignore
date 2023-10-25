@@ -4,3 +4,4 @@ vendor
 pkg/api/*
 web/app/dist
 web/app/node_modules
+runtime_data/*

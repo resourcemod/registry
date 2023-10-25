@@ -3,14 +3,19 @@ package controllers
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/v56/github"
 	"github.com/resourcemod/registry/internal/db"
 	u "github.com/resourcemod/registry/pkg/api"
 	"github.com/resourcemod/registry/pkg/models"
 	"go.mongodb.org/mongo-driver/bson"
+	"io"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -48,23 +53,9 @@ func GetContentList(c *gin.Context) {
 			c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
 			return
 		}
-		collection = db.GetMongoClient().Database("registry").Collection("content_revisions")
-
-		res := collection.FindOne(context.TODO(), bson.D{{"content_name", elem.Name}, {"version", elem.Version}})
-		if res.Err() != nil {
-			c.JSON(http.StatusNotFound, u.ValidationErrorResponse{Message: res.Err().Error(), Code: http.StatusNotFound})
-			return
-		}
-		var revision models.ContentRevision
-		err = res.Decode(&revision)
-		if err != nil {
-			c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
-			return
-		}
 
 		content = append(content, u.ContentResponse{
 			Name:        elem.Name,
-			Version:     elem.Version,
 			Type:        t,
 			Description: elem.Description,
 			IsPublic:    elem.IsPublic,
@@ -73,12 +64,6 @@ func GetContentList(c *gin.Context) {
 				FullName:    elem.Repository.FullName,
 				GitURL:      elem.Repository.GitUrl,
 				Integration: elem.Repository.Integration,
-			},
-			Release: u.Release{
-				ReleaseName: revision.ReleaseName,
-				Version:     revision.Version,
-				AssetsURL:   revision.AssetsUrl,
-				ContentName: revision.ContentName,
 			},
 			CreatedAt: cr,
 			UpdatedAt: up,
@@ -121,23 +106,8 @@ func GetContentByName(c *gin.Context) {
 		return
 	}
 
-	collection = db.GetMongoClient().Database("registry").Collection("content_revisions")
-
-	res = collection.FindOne(context.TODO(), bson.D{{"content_name", elem.Name}, {"version", elem.Version}})
-	if res.Err() != nil {
-		c.JSON(http.StatusNotFound, u.ValidationErrorResponse{Message: res.Err().Error(), Code: http.StatusNotFound})
-		return
-	}
-	var revision models.ContentRevision
-	err = res.Decode(&revision)
-	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
-		return
-	}
-
 	c.JSON(http.StatusOK, u.ContentResponse{
 		Name:        elem.Name,
-		Version:     elem.Version,
 		Type:        t,
 		Description: elem.Description,
 		IsPublic:    elem.IsPublic,
@@ -146,12 +116,6 @@ func GetContentByName(c *gin.Context) {
 			FullName:    elem.Repository.FullName,
 			GitURL:      elem.Repository.GitUrl,
 			Integration: elem.Repository.Integration,
-		},
-		Release: u.Release{
-			ReleaseName: revision.ReleaseName,
-			Version:     revision.Version,
-			AssetsURL:   revision.AssetsUrl,
-			ContentName: revision.ContentName,
 		},
 		CreatedAt: cr,
 		UpdatedAt: up,
@@ -184,7 +148,6 @@ func CreateContent(c *gin.Context) {
 	r := request.GetRepository()
 	model := models.Content{
 		Name:        request.Name,
-		Version:     request.GetVersion(),
 		Type:        contentType,
 		Description: request.GetDescription(),
 		IsPublic:    request.GetIsPublic(),
@@ -216,7 +179,7 @@ func CreateContent(c *gin.Context) {
 	// check GitHub integration connection and get last release
 	client := github.NewClient(nil).WithAuthToken(integration.AccessToken)
 	gitData := strings.Split(request.Repository.GetFullName(), "/")
-	release, _, err := client.Repositories.GetLatestRelease(context.TODO(), gitData[0], gitData[1])
+	_, _, err = client.Repositories.GetLatestRelease(context.TODO(), gitData[0], gitData[1])
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
 		return
@@ -227,33 +190,15 @@ func CreateContent(c *gin.Context) {
 		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
 		return
 	}
-	revisionModel := models.ContentRevision{
-		ContentName: model.Name,
-		Version:     model.Version,
-		ReleaseName: release.GetName(),
-		AssetsUrl:   release.GetAssetsURL(),
-	}
-	_, err = db.GetMongoClient().Database("registry").Collection("content_revisions").InsertOne(context.TODO(), revisionModel)
-	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
-		return
-	}
 
 	c.JSON(http.StatusCreated, u.ContentResponse{
 		Name:        request.Name,
-		Version:     request.Version,
 		Type:        contentResponseType,
 		Description: request.Description,
-		Release: u.Release{
-			ReleaseName: revisionModel.ReleaseName,
-			ContentName: revisionModel.ContentName,
-			AssetsURL:   revisionModel.AssetsUrl,
-			Version:     revisionModel.Version,
-		},
-		IsPublic:  request.IsPublic,
-		UserName:  model.UserName,
-		CreatedAt: cr,
-		UpdatedAt: up,
+		IsPublic:    request.IsPublic,
+		UserName:    model.UserName,
+		CreatedAt:   cr,
+		UpdatedAt:   up,
 	})
 }
 
@@ -286,14 +231,6 @@ func UpdateContent(c *gin.Context) {
 		return
 	}
 
-	// get revision
-	collection = db.GetMongoClient().Database("registry").Collection("content_revisions")
-	revisionsCount, err := collection.CountDocuments(context.TODO(), bson.D{{"content_name", model.Name}, {"version", request.Version}})
-	if err != nil {
-		c.JSON(http.StatusNotFound, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusNotFound})
-		return
-	}
-
 	// get integration
 	res = db.GetMongoClient().Database("registry").Collection("integrations").FindOne(context.TODO(), bson.D{{
 		"name", model.Repository.Integration,
@@ -310,33 +247,23 @@ func UpdateContent(c *gin.Context) {
 		return
 	}
 
-	// check GitHub integration connection and get last release
+	// check GitHub integration connection
 	client := github.NewClient(nil).WithAuthToken(integration.AccessToken)
 	gitData := strings.Split(model.Repository.FullName, "/")
-	release, _, err := client.Repositories.GetLatestRelease(context.TODO(), gitData[0], gitData[1])
+	_, _, err = client.Repositories.GetLatestRelease(context.TODO(), gitData[0], gitData[1])
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
 		return
 	}
 
-	revisionModel := models.ContentRevision{
-		ContentName: model.Name,
-		Version:     model.Version,
-		ReleaseName: release.GetName(),
-		AssetsUrl:   release.GetAssetsURL(),
-	}
-
 	model.UpdatedAt = time.Now().Format(time.RFC3339)
 	model.Description = request.Description
-
 	model.IsPublic = request.IsPublic
-	model.Version = request.Version
 
 	update := bson.D{{"$set", bson.D{
 		{"updated_at", model.UpdatedAt},
 		{"description", model.Description},
 		{"is_public", model.IsPublic},
-		{"version", model.Version},
 	}}}
 	_, err = collection.UpdateOne(context.TODO(), bson.D{{"name", name}, {"type", t}}, update)
 	if err != nil {
@@ -354,30 +281,14 @@ func UpdateContent(c *gin.Context) {
 		return
 	}
 
-	if revisionsCount == 0 {
-		// create new revision
-		_, err = db.GetMongoClient().Database("registry").Collection("content_revisions").InsertOne(context.TODO(), revisionModel)
-		if err != nil {
-			c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
-			return
-		}
-	}
-
 	c.JSON(http.StatusOK, u.ContentResponse{
 		Name:        model.Name,
-		Version:     model.Version,
 		Type:        contentType,
 		Description: model.Description,
-		Release: u.Release{
-			ReleaseName: revisionModel.ReleaseName,
-			ContentName: revisionModel.ContentName,
-			AssetsURL:   revisionModel.AssetsUrl,
-			Version:     revisionModel.Version,
-		},
-		IsPublic:  model.IsPublic,
-		UserName:  model.UserName,
-		CreatedAt: cr,
-		UpdatedAt: up,
+		IsPublic:    model.IsPublic,
+		UserName:    model.UserName,
+		CreatedAt:   cr,
+		UpdatedAt:   up,
 	})
 }
 
@@ -398,5 +309,113 @@ func DeleteContent(c *gin.Context) {
 		return
 	}
 
+	res = db.GetMongoClient().Database("registry").Collection("content_revisions").FindOneAndDelete(context.TODO(), bson.D{
+		{"content_name", request.Name},
+	})
+	if res.Err() != nil {
+		c.JSON(http.StatusNotFound, u.ValidationErrorResponse{Message: res.Err().Error(), Code: http.StatusNotFound})
+		return
+	}
+
 	c.JSON(http.StatusOK, u.DeleteContentResponse{Message: "Deleted"})
+}
+
+// GetDownloadLink works only for public content. For private content look at GetPluginContent and GetExtensionContent methods
+func GetDownloadLink(c *gin.Context) {
+	var request u.GetContentDownloadURIParams
+	request.Name = c.Param("name")
+	contentType := c.Param("type")
+	request.Version = c.Param("version")
+
+	// get content
+	collection := db.GetMongoClient().Database("registry").Collection("content")
+	res := collection.FindOne(context.TODO(), bson.D{{"type", contentType}, {"name", request.Name}})
+	if res.Err() != nil {
+		c.JSON(http.StatusNotFound, u.ValidationErrorResponse{Message: res.Err().Error(), Code: http.StatusNotFound})
+		return
+	}
+	var model models.Content
+	err := res.Decode(&model)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
+		return
+	}
+	if model.IsPublic == false {
+		c.JSON(http.StatusForbidden, u.ForbiddenResponse{Message: "Attempt to download private content.", Code: http.StatusForbidden})
+		return
+	}
+
+	// get integration
+	res = db.GetMongoClient().Database("registry").Collection("integrations").FindOne(context.TODO(), bson.D{{
+		"name", model.Repository.Integration,
+	}})
+	if res.Err() != nil {
+		c.JSON(http.StatusNotFound, u.ValidationErrorResponse{Message: res.Err().Error(), Code: http.StatusNotFound})
+		return
+	}
+
+	var integration models.Integration
+	err = res.Decode(&integration)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
+		return
+	}
+
+	contentPath := os.Getenv("CONTENT_DATA_FOLDER") + "/" + model.Name + "/" + request.Version + "/" + model.Name + ".zip"
+	client := github.NewClient(nil).WithAuthToken(integration.AccessToken)
+	gitData := strings.Split(model.Repository.FullName, "/")
+
+	tags, _, err := client.Repositories.ListTags(context.TODO(), gitData[0], gitData[1], &github.ListOptions{})
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
+		return
+	}
+
+	// if file does not exist yet download it
+	if _, err := os.Stat(contentPath); errors.Is(err, os.ErrNotExist) {
+		for _, tag := range tags {
+			if request.Version == tag.GetName() {
+				err = downloadFile(contentPath, tag.GetZipballURL(), client.Client())
+				if err != nil {
+					c.JSON(http.StatusUnprocessableEntity, u.ValidationErrorResponse{Message: err.Error(), Code: http.StatusUnprocessableEntity})
+					return
+				}
+				break
+			}
+		}
+	}
+	c.File(contentPath)
+}
+
+func downloadFile(path string, url string, client *http.Client) error {
+	dir, _ := filepath.Split(path)
+	err := os.MkdirAll(dir, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	out, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// Get the data
+	resp, err := client.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Check server response
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("bad status: %s", resp.Status)
+	}
+
+	// Writer the body to file
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
