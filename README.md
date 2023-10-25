@@ -66,3 +66,6 @@ docker run -e DB_DSN=mongodb://host:port -e JWT_SECRET_KEY=*your_secret_jwt_key*
 2. Gin http server framework
 3. Docker
 4. OpenAPI specifications
+
+#### Docker Hub
+https://hub.docker.com/r/resourcemod/rmod-registry
