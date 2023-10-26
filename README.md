@@ -46,6 +46,7 @@ docker run -e DB_DSN=mongodb://host:port -e JWT_SECRET_KEY=*your_secret_jwt_key*
 1. JWT_SECRET_KEY (jwt secret key)
 2. DB_DSN (mongodb dsn)
 3. CONTENT_DATA_FOLDER (folder with content cache)
+4. IS_DEV (provide cors to localhost:3000)
 
 #### rmod-reg serve command flags
 1. host (default: 0.0.0.0)
