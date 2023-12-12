@@ -1,4 +1,4 @@
-![Registry Logo](web/app/assets/logo.png)
+[![Registry Logo](web/app/assets/logo.png)](https://resourcemod.net/)
 #### What's that?
 ResourceMod content registry is a self-hosted solution to host your plugins and extensions for cs2 game servers.
 
